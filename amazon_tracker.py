@@ -42,7 +42,9 @@ class AmazonAPI:
             results = result_list[0].find_elements_by_xpath('//div/span/div/div/div[2]/div[2]/div/div[1]/div/div/div[1]/h2/a')
             links = [link.get_attribute('href') for link in results]
             return links
+        
         except Exception as exp :
+            
             print("Sorry no  search results")
             print(exp)
             return links
@@ -50,12 +52,73 @@ class AmazonAPI:
        
         
     def get_products_info(self,links):
-        asins = self.get_asins()
+        asins = self.get_asins(links)
+        
+        products = []
+        
+        for asin in asins:
+            product = self.get_single_product_info(asin)
+            
+            
+    def get_single_product_info(self, asin):
+        
+        print(f"Getting Info for Product ID: {asin}")
+        
+        product_shortened_url = self.shorten_url(asin)
+        
+        self.driver.get(f'{product_shortened_url}?language=en_GB')
+        time.sleep(2)
+        
+        title = self.get_title()
+        seller = self.get_seller()
+        price = self.get_price()
+        
+        
+    
+    def get_title(self):
+        
+        try :
+            
+            return self.driver.find_element_by_id('productTitle').text
+        
+        except Exception as exp:
+            
+            print(exp)
+            print(f'Error cannot get title for this product')
+            return None
+        
+    def get_seller(self):
+        
+        try :
+            
+            return self.driver.find_element_by_id('bylineinfo').text
+        
+        except Exception as exp:
+            
+            print(exp)
+            print(f"error cannot get seller for this item")
+            return None
+        
+        
+    def get_price(self):
+    
+        pass
+    
+    
+    def shorten_url(self, asin):
+        
+        return self.base_url + 'dp/' + asin
         
         
         
-    def get_asins():
-        return 
+        
+    def get_asins(self, links):
+        return [self.get_asin(link) for link in links]
+        
+    
+    def get_asin(self, product_link):
+        return product_link[product_link.find('/dp/') + 4:product_link.find('/ref/')]
+        
         
     
     
@@ -86,8 +149,6 @@ class ReportGenerator:
 
 
 # Static Functions
-
-
 
 
 if __name__ == '__main__':
